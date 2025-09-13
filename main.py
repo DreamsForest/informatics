@@ -21,7 +21,7 @@ class MainApp(MDApp):
             text='CLICK ME',
             pos_hint={'center_x': 0.5},
             size_hint=(None, None),
-            size=(150, 51)
+            size=(150, 50)
         )
 
         # Или другие стили кнопок:
