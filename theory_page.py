@@ -4,7 +4,7 @@ from kivymd.uix.toolbar import MDTopAppBar
 from kivy.metrics import dp
 
 
-class AboutPage(MDBoxLayout):
+class TheoryPage(MDBoxLayout):
     def __init__(self, main_app, **kwargs):
         super().__init__(**kwargs)
         self.main_app = main_app
@@ -13,7 +13,7 @@ class AboutPage(MDBoxLayout):
 
         # Панель инструментов
         self.toolbar = MDTopAppBar(
-            title="О нас",
+            title="Ознакомление с теорией",
             left_action_items=[["menu", lambda x: self.toggle_nav_drawer()]],
             elevation=10,
             md_bg_color=(0.2, 0.6, 0.8, 1),

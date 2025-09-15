@@ -6,12 +6,13 @@ from kivymd.uix.navigationdrawer import MDNavigationDrawer
 from kivymd.uix.toolbar import MDTopAppBar
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.scrollview import ScrollView
-from kivy.uix.anchorlayout import AnchorLayout
 from kivy.metrics import dp
 from kivy.core.window import Window
 
-# Импортируем класс страницы "О нас"
+# Импортируем классы страниц
 from about_page import AboutPage
+from select_task_page import SelectTaskPage
+from theory_page import TheoryPage
 
 
 class MainApp(MDApp):
@@ -49,28 +50,28 @@ class MainApp(MDApp):
         self.main_content.clear_widgets()
         self.toolbar.title = "Главная страница"
 
-        # Содержимое главной страницы
-        content = MDLabel(
-            text="Добро пожаловать в наше приложение!",
-            halign='center',
-            valign='middle',
-            theme_text_color='Primary',
-            font_style='H5'
-        )
-        self.main_content.add_widget(content)
+
 
     def show_about_page(self):
         """Показывает страницу 'О нас'"""
         self.main_content.clear_widgets()
         self.toolbar.title = "О нас"
-
-        # Создаем экземпляр страницы "О нас"
-        about_page = AboutPage()
-
-        # Привязываем метод возврата
-        about_page.go_back = lambda x: self.show_main_page()
-
+        about_page = AboutPage(main_app=self)
         self.main_content.add_widget(about_page)
+
+    def show_select_task_page(self):
+        """Показывает страницу 'Выбрать задание'"""
+        self.main_content.clear_widgets()
+        self.toolbar.title = "Выбрать задание"
+        select_task_page = SelectTaskPage(main_app=self)
+        self.main_content.add_widget(select_task_page)
+
+    def show_theory_page(self):
+        """Показывает страницу 'Ознакомление с теорией'"""
+        self.main_content.clear_widgets()
+        self.toolbar.title = "Ознакомление с теорией"
+        theory_page = TheoryPage(main_app=self)
+        self.main_content.add_widget(theory_page)
 
     def create_navigation_drawer(self):
         self.nav_drawer = MDNavigationDrawer(
@@ -113,7 +114,7 @@ class MainApp(MDApp):
         menu_list.bind(minimum_height=menu_list.setter('height'))
 
         menu_items = [
-            "Главная", "О нас"
+            "Главная", "Выбрать задание", "Ознакомление с теорией", "О нас"
         ]
 
         for item in menu_items:
@@ -167,6 +168,10 @@ class MainApp(MDApp):
         # Обработка выбора пунктов меню
         if item == "Главная":
             self.show_main_page()
+        elif item == "Выбрать задание":
+            self.show_select_task_page()
+        elif item == "Ознакомление с теорией":
+            self.show_theory_page()
         elif item == "О нас":
             self.show_about_page()
 
