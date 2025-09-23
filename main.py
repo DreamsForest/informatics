@@ -4,8 +4,10 @@ from kivymd.uix.label import MDLabel
 from kivymd.uix.list import MDList, OneLineListItem
 from kivymd.uix.navigationdrawer import MDNavigationDrawer
 from kivymd.uix.toolbar import MDTopAppBar
+from kivymd.uix.card import MDCard
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.scrollview import ScrollView
+from kivy.uix.anchorlayout import AnchorLayout
 from kivy.metrics import dp
 from kivy.core.window import Window
 
@@ -17,8 +19,12 @@ from theory_page import TheoryPage
 
 class MainApp(MDApp):
     def build(self):
-        # Главный layout
-        self.root_layout = BoxLayout(orientation='vertical')
+        # Главный layout - используем AnchorLayout для правильного позиционирования drawer
+        self.root_layout = AnchorLayout()
+
+        # Основной контейнер с контентом
+        self.main_container = BoxLayout(orientation='vertical')
+        self.root_layout.add_widget(self.main_container)
 
         # Панель инструментов
         self.toolbar = MDTopAppBar(
@@ -36,9 +42,9 @@ class MainApp(MDApp):
         # Главная страница по умолчанию
         self.show_main_page()
 
-        # Добавляем в корневой layout
-        self.root_layout.add_widget(self.toolbar)
-        self.root_layout.add_widget(self.main_content)
+        # Добавляем в основной контейнер
+        self.main_container.add_widget(self.toolbar)
+        self.main_container.add_widget(self.main_content)
 
         # Навигационное меню
         self.create_navigation_drawer()
@@ -46,11 +52,115 @@ class MainApp(MDApp):
         return self.root_layout
 
     def show_main_page(self):
-        """Показывает главную страницу"""
+        """Показывает главную страницу с 3 блоками"""
         self.main_content.clear_widgets()
         self.toolbar.title = "Главная страница"
 
+        # Создаем ScrollView для контента
+        scroll_view = ScrollView(do_scroll_x=False)
 
+        # Создаем контейнер для блоков
+        content_layout = BoxLayout(
+            orientation='vertical',
+            padding=dp(20),
+            spacing=dp(20),
+            size_hint_y=None
+        )
+
+        # Устанавливаем высоту контента
+        content_layout.height = dp(120) * 3 + dp(20) * 4  # 3 блока + отступы
+
+        # Первый блок
+        info_block1 = MDCard(
+            orientation='vertical',
+            size_hint_y=None,
+            height=dp(120),
+            padding=dp(15),
+            spacing=dp(10),
+            md_bg_color=(0.9, 0.95, 1, 1),
+            radius=[dp(15)],
+            elevation=2
+        )
+        info_block1.add_widget(MDLabel(
+            text="Теория",
+            halign='center',
+            theme_text_color='Primary',
+            font_style='H5',
+            size_hint_y=None,
+            height=dp(40)
+        ))
+        info_block1.add_widget(MDLabel(
+            text="Изучите теоретические материалы перед выполнением заданий",
+            halign='center',
+            theme_text_color='Secondary',
+            font_style='Body2',
+            size_hint_y=None,
+            height=dp(60)
+        ))
+
+        # Второй блок
+        info_block2 = MDCard(
+            orientation='vertical',
+            size_hint_y=None,
+            height=dp(120),
+            padding=dp(15),
+            spacing=dp(10),
+            md_bg_color=(0.95, 0.98, 0.95, 1),
+            radius=[dp(15)],
+            elevation=2
+        )
+        info_block2.add_widget(MDLabel(
+            text="Задания",
+            halign='center',
+            theme_text_color='Primary',
+            font_style='H5',
+            size_hint_y=None,
+            height=dp(40)
+        ))
+        info_block2.add_widget(MDLabel(
+            text="Практикуйтесь на различных заданиях разного уровня сложности",
+            halign='center',
+            theme_text_color='Secondary',
+            font_style='Body2',
+            size_hint_y=None,
+            height=dp(60)
+        ))
+
+        # Третий блок
+        info_block3 = MDCard(
+            orientation='vertical',
+            size_hint_y=None,
+            height=dp(120),
+            padding=dp(15),
+            spacing=dp(10),
+            md_bg_color=(1, 0.95, 0.95, 1),
+            radius=[dp(15)],
+            elevation=2
+        )
+        info_block3.add_widget(MDLabel(
+            text="О нас",
+            halign='center',
+            theme_text_color='Primary',
+            font_style='H5',
+            size_hint_y=None,
+            height=dp(40)
+        ))
+        info_block3.add_widget(MDLabel(
+            text="Узнайте больше о нашем приложении и его возможностях",
+            halign='center',
+            theme_text_color='Secondary',
+            font_style='Body2',
+            size_hint_y=None,
+            height=dp(60)
+        ))
+
+        # Добавляем блоки в контейнер
+        content_layout.add_widget(info_block1)
+        content_layout.add_widget(info_block2)
+        content_layout.add_widget(info_block3)
+
+        scroll_view.add_widget(content_layout)
+        self.main_content.add_widget(scroll_view)
 
     def show_about_page(self):
         """Показывает страницу 'О нас'"""
@@ -75,12 +185,11 @@ class MainApp(MDApp):
 
     def create_navigation_drawer(self):
         self.nav_drawer = MDNavigationDrawer(
-            size_hint=(0.8, None),
+            size_hint=(0.8, 1),
             elevation=20,
             radius=(0, 16, 16, 0),
             state="close"
         )
-        self.nav_drawer.height = Window.height - dp(56)
 
         drawer_content = BoxLayout(orientation='vertical', spacing=0)
 
@@ -146,14 +255,10 @@ class MainApp(MDApp):
         drawer_content.add_widget(footer)
 
         self.nav_drawer.add_widget(drawer_content)
+
+        # Добавляем drawer в корневой AnchorLayout (он будет поверх основного контента)
         self.root_layout.add_widget(self.nav_drawer)
         self.nav_drawer.set_state('close')
-
-        Window.bind(on_resize=self.on_window_resize)
-
-    def on_window_resize(self, window, width, height):
-        if hasattr(self, 'nav_drawer'):
-            self.nav_drawer.height = height - dp(56)
 
     def toggle_nav_drawer(self):
         if self.nav_drawer.state == 'open':
