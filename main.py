@@ -15,6 +15,9 @@ from kivy.core.window import Window
 from about_page import AboutPage
 from select_task_page import SelectTaskPage
 from theory_page import TheoryPage
+from task_19_page import Task19Page
+from task_20_page import Task20Page
+from task_21_page import Task21Page
 
 
 class MainApp(MDApp):
@@ -182,6 +185,24 @@ class MainApp(MDApp):
         self.toolbar.title = "Ознакомление с теорией"
         theory_page = TheoryPage(main_app=self)
         self.main_content.add_widget(theory_page)
+
+    def show_task_page(self, task_type):
+        """Показывает страницу с конкретным заданием"""
+        self.main_content.clear_widgets()
+
+        if task_type == "task_19":
+            self.toolbar.title = "Задание №19"
+            task_page = Task19Page(main_app=self)
+        elif task_type == "task_20":
+            self.toolbar.title = "Задание №20"
+            task_page = Task20Page(main_app=self)
+        elif task_type == "task_21":
+            self.toolbar.title = "Задание №21"
+            task_page = Task21Page(main_app=self)
+        else:
+            return
+
+        self.main_content.add_widget(task_page)
 
     def create_navigation_drawer(self):
         self.nav_drawer = MDNavigationDrawer(
