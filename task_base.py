@@ -16,6 +16,10 @@ class BaseTaskPage(MDBoxLayout):
         self.spacing = dp(10)
         self.padding = dp(20)
 
+        # Инициализируем current_task
+        self.current_task = None
+
+        # Генерируем задание и показываем интерфейс
         self.generate_task()
         self.show_task_interface()
 
@@ -28,65 +32,51 @@ class BaseTaskPage(MDBoxLayout):
         }
 
     def show_task_interface(self):
-        """Показывает интерфейс задания"""
+        """Показывает интерфейс задания (базовая реализация)"""
         self.clear_widgets()
 
-        # Кнопка назад
+        # Простой интерфейс по умолчанию
+        self.add_widget(MDLabel(
+            text=f"Задание {self.task_type}",
+            theme_text_color='Primary',
+            font_style='H5',
+            halign='center'
+        ))
+
+        if self.current_task:
+            self.add_widget(MDLabel(
+                text=self.current_task['description'],
+                theme_text_color='Secondary'
+            ))
+
+            self.add_widget(MDLabel(
+                text=f"Вопрос: {self.current_task['question']}",
+                theme_text_color='Primary'
+            ))
+
+        # Кнопки управления
+        buttons_layout = MDBoxLayout(
+            orientation='horizontal',
+            size_hint_y=None,
+            height=dp(50),
+            spacing=dp(10)
+        )
+
         back_button = MDRaisedButton(
-            text="Назад к выбору заданий",
-            size_hint=(None, None),
-            size=(dp(200), dp(50)),
-            pos_hint={'center_x': 0.5}
+            text="Назад",
+            size_hint_x=0.5
         )
         back_button.bind(on_release=lambda x: self.main_app.show_select_task_page())
-        self.add_widget(back_button)
 
-        # Карточка с заданием
-        task_card = MDCard(
-            orientation='vertical',
-            size_hint_y=None,
-            height=dp(300),
-            padding=dp(20),
-            spacing=dp(15),
-            elevation=2,
-            radius=[dp(15)]
-        )
-
-        task_card.add_widget(MDLabel(
-            text=f"Задание {self.task_type.upper().replace('_', ' ')}",
-            theme_text_color='Primary',
-            font_style='H4',
-            size_hint_y=None,
-            height=dp(40)
-        ))
-
-        task_card.add_widget(MDLabel(
-            text=self.current_task['description'],
-            theme_text_color='Secondary',
-            font_style='Body1',
-            size_hint_y=None,
-            height=dp(150)
-        ))
-
-        task_card.add_widget(MDLabel(
-            text=f"Вопрос: {self.current_task['question']}",
-            theme_text_color='Primary',
-            font_style='H6',
-            size_hint_y=None,
-            height=dp(60)
-        ))
-
-        self.add_widget(task_card)
-
-        # Кнопка для генерации нового задания
         new_task_button = MDRaisedButton(
             text="Новое задание",
-            size_hint=(None, None),
-            size=(dp(200), dp(50)),
-            pos_hint={'center_x': 0.5}
+            size_hint_x=0.5
         )
         new_task_button.bind(on_release=lambda x: self.generate_new_task())
-        self.add_widget(new_task_button)
+
+        buttons_layout.add_widget(back_button)
+        buttons_layout.add_widget(new_task_button)
+        self.add_widget(buttons_layout)
 
     def generate_new_task(self):
         """Генерирует новое задание и обновляет интерфейс"""

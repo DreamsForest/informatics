@@ -73,7 +73,7 @@ class MainApp(MDApp):
         # Устанавливаем высоту контента
         content_layout.height = dp(120) * 3 + dp(20) * 4  # 3 блока + отступы
 
-        # Первый блок
+        # Первый блок - Теория
         info_block1 = MDCard(
             orientation='vertical',
             size_hint_y=None,
@@ -101,7 +101,10 @@ class MainApp(MDApp):
             height=dp(60)
         ))
 
-        # Второй блок
+        # Добавляем обработчик клика для блока Теория
+        info_block1.bind(on_touch_down=lambda instance, touch: self._on_block_click(instance, touch, "theory"))
+
+        # Второй блок - Задания
         info_block2 = MDCard(
             orientation='vertical',
             size_hint_y=None,
@@ -129,7 +132,10 @@ class MainApp(MDApp):
             height=dp(60)
         ))
 
-        # Третий блок
+        # Добавляем обработчик клика для блока Задания
+        info_block2.bind(on_touch_down=lambda instance, touch: self._on_block_click(instance, touch, "tasks"))
+
+        # Третий блок - О нас
         info_block3 = MDCard(
             orientation='vertical',
             size_hint_y=None,
@@ -141,7 +147,7 @@ class MainApp(MDApp):
             elevation=2
         )
         info_block3.add_widget(MDLabel(
-            text="О нас",
+            text="Статистика",
             halign='center',
             theme_text_color='Primary',
             font_style='H5',
@@ -149,13 +155,16 @@ class MainApp(MDApp):
             height=dp(40)
         ))
         info_block3.add_widget(MDLabel(
-            text="Узнайте больше о нашем приложении и его возможностях",
+            text="Узнайте свою статистику по пройденным заданиям",
             halign='center',
             theme_text_color='Secondary',
             font_style='Body2',
             size_hint_y=None,
             height=dp(60)
         ))
+
+        # Добавляем обработчик клика для блока О нас
+        info_block3.bind(on_touch_down=lambda instance, touch: self._on_block_click(instance, touch, "about"))
 
         # Добавляем блоки в контейнер
         content_layout.add_widget(info_block1)
@@ -165,10 +174,23 @@ class MainApp(MDApp):
         scroll_view.add_widget(content_layout)
         self.main_content.add_widget(scroll_view)
 
+    def _on_block_click(self, instance, touch, block_type):
+        """Обрабатывает клик по блокам на главной странице"""
+        if instance.collide_point(*touch.pos):
+            if touch.button == 'left':  # Только левая кнопка мыши
+                if block_type == "theory":
+                    self.show_theory_page()
+                elif block_type == "tasks":
+                    self.show_select_task_page()
+                elif block_type == "about":
+                    self.show_about_page()
+                return True  # Обработали событие
+        return False  # Не обрабатываем
+
     def show_about_page(self):
         """Показывает страницу 'О нас'"""
         self.main_content.clear_widgets()
-        self.toolbar.title = "О нас"
+        self.toolbar.title = "Статистика"
         about_page = AboutPage(main_app=self)
         self.main_content.add_widget(about_page)
 
@@ -244,7 +266,7 @@ class MainApp(MDApp):
         menu_list.bind(minimum_height=menu_list.setter('height'))
 
         menu_items = [
-            "Главная", "Выбрать задание", "Ознакомление с теорией", "О нас"
+            "Главная", "Выбрать задание", "Ознакомление с теорией", "Статистика"
         ]
 
         for item in menu_items:
@@ -298,7 +320,7 @@ class MainApp(MDApp):
             self.show_select_task_page()
         elif item == "Ознакомление с теорией":
             self.show_theory_page()
-        elif item == "О нас":
+        elif item == "Статистика":
             self.show_about_page()
 
 
