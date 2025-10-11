@@ -54,6 +54,27 @@ class MainApp(MDApp):
 
         return self.root_layout
 
+    def show_theory_detail_page(self, theory_type):
+        """Показывает страницу с детальной теорией"""
+        self.main_content.clear_widgets()
+
+        if theory_type == "theory_19":
+            self.toolbar.title = "Теория: Задание 19"
+            from theory_19_page import Theory19Page
+            theory_page = Theory19Page(main_app=self)
+        elif theory_type == "theory_20":
+            self.toolbar.title = "Теория: Задание 20"
+            from theory_20_page import Theory20Page
+            theory_page = Theory20Page(main_app=self)
+        elif theory_type == "theory_21":
+            self.toolbar.title = "Теория: Задание 21"
+            from theory_21_page import Theory21Page
+            theory_page = Theory21Page(main_app=self)
+        else:
+            return
+
+        self.main_content.add_widget(theory_page)
+
     def show_main_page(self):
         """Показывает главную страницу с 3 блоками"""
         self.main_content.clear_widgets()
