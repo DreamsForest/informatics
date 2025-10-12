@@ -269,8 +269,11 @@ class Task21Page(BaseTaskPage):
         return random.randint(max(1, max_val // 6), min(max_val, max_val // 3))
 
     def check_answer(self, instance):
-        """Проверяет ответ пользователя"""
+        """Проверяет ответ пользователя и записывает статистику"""
+        print("Кнопка Проверить нажата")
+
         if self.result_label is None:
+            print("Ошибка: result_label не инициализирован")
             return
 
         if not hasattr(self, 'correct_answer') or self.correct_answer is None:
@@ -286,6 +289,8 @@ class Task21Page(BaseTaskPage):
             return
 
         user_answer = self.answer_input.text.strip()
+        print(f"Пользователь ввел: '{user_answer}'")
+        print(f"Правильный ответ: {self.correct_answer}")
 
         if not user_answer:
             self.result_label.text = "Введите ответ"
@@ -300,15 +305,31 @@ class Task21Page(BaseTaskPage):
                 self.result_label.text = "Правильно! Отличная работа!"
                 self.result_label.theme_text_color = "Custom"
                 self.result_label.text_color = (0, 0.7, 0, 1)
+                # ЗАПИСЫВАЕМ ПРАВИЛЬНЫЙ ОТВЕТ В СТАТИСТИКУ
+                self._record_statistics(is_correct=True)
             else:
                 self.result_label.text = f"Неправильно. Правильный ответ: {self.correct_answer}"
                 self.result_label.theme_text_color = "Custom"
                 self.result_label.text_color = (0.8, 0, 0, 1)
+                # ЗАПИСЫВАЕМ НЕПРАВИЛЬНЫЙ ОТВЕТ В СТАТИСТИКУ
+                self._record_statistics(is_correct=False)
 
         except ValueError:
             self.result_label.text = "Введите число!"
             self.result_label.theme_text_color = "Custom"
             self.result_label.text_color = (0.8, 0, 0, 1)
+
+    def _record_statistics(self, is_correct):
+        """Записывает статистику выполнения задания"""
+        try:
+            # Вызываем метод в main_app для обновления статистики
+            if hasattr(self.main_app, 'update_statistics'):
+                self.main_app.update_statistics("task_21", is_correct)
+                print(f"Статистика записана: задание 21, правильный: {is_correct}")
+            else:
+                print("Метод update_statistics не найден в main_app")
+        except Exception as e:
+            print(f"Ошибка записи статистики: {e}")
 
     def go_back(self, instance):
         """Возвращает к выбору заданий"""

@@ -12,7 +12,11 @@ from kivy.metrics import dp
 from kivy.core.window import Window
 
 # Импортируем классы страниц
-from about_page import AboutPage
+from statistics_main_page import StatisticsMainPage
+from statistics_19_page import Statistics19Page
+from statistics_20_page import Statistics20Page
+from statistics_21_page import Statistics21Page
+from statistics_total_page import StatisticsTotalPage
 from select_task_page import SelectTaskPage
 from theory_page import TheoryPage
 from task_19_page import Task19Page
@@ -74,6 +78,34 @@ class MainApp(MDApp):
             return
 
         self.main_content.add_widget(theory_page)
+
+    def show_statistics_main_page(self):
+        """Показывает главную страницу статистики"""
+        self.main_content.clear_widgets()
+        self.toolbar.title = "Статистика"
+        stats_page = StatisticsMainPage(main_app=self)
+        self.main_content.add_widget(stats_page)
+
+    def show_statistics_detail_page(self, stats_type):
+        """Показывает детальную страницу статистики"""
+        self.main_content.clear_widgets()
+
+        if stats_type == "statistics_19":
+            self.toolbar.title = "Статистика: Задание 19"
+            stats_page = Statistics19Page(main_app=self)
+        elif stats_type == "statistics_20":
+            self.toolbar.title = "Статистика: Задание 20"
+            stats_page = Statistics20Page(main_app=self)
+        elif stats_type == "statistics_21":
+            self.toolbar.title = "Статистика: Задание 21"
+            stats_page = Statistics21Page(main_app=self)
+        elif stats_type == "statistics_total":
+            self.toolbar.title = "Общая статистика"
+            stats_page = StatisticsTotalPage(main_app=self)
+        else:
+            return
+
+        self.main_content.add_widget(stats_page)
 
     def show_main_page(self):
         """Показывает главную страницу с 3 блоками"""
@@ -156,7 +188,7 @@ class MainApp(MDApp):
         # Добавляем обработчик клика для блока Задания
         info_block2.bind(on_touch_down=lambda instance, touch: self._on_block_click(instance, touch, "tasks"))
 
-        # Третий блок - О нас
+        # Третий блок - Статистика
         info_block3 = MDCard(
             orientation='vertical',
             size_hint_y=None,
@@ -184,8 +216,8 @@ class MainApp(MDApp):
             height=dp(60)
         ))
 
-        # Добавляем обработчик клика для блока О нас
-        info_block3.bind(on_touch_down=lambda instance, touch: self._on_block_click(instance, touch, "about"))
+        # Добавляем обработчик клика для блока Статистика
+        info_block3.bind(on_touch_down=lambda instance, touch: self._on_block_click(instance, touch, "statistics"))
 
         # Добавляем блоки в контейнер
         content_layout.add_widget(info_block1)
@@ -203,17 +235,10 @@ class MainApp(MDApp):
                     self.show_theory_page()
                 elif block_type == "tasks":
                     self.show_select_task_page()
-                elif block_type == "about":
-                    self.show_about_page()
+                elif block_type == "statistics":
+                    self.show_statistics_main_page()
                 return True  # Обработали событие
         return False  # Не обрабатываем
-
-    def show_about_page(self):
-        """Показывает страницу 'О нас'"""
-        self.main_content.clear_widgets()
-        self.toolbar.title = "Статистика"
-        about_page = AboutPage(main_app=self)
-        self.main_content.add_widget(about_page)
 
     def show_select_task_page(self):
         """Показывает страницу 'Выбрать задание'"""
@@ -342,7 +367,48 @@ class MainApp(MDApp):
         elif item == "Ознакомление с теорией":
             self.show_theory_page()
         elif item == "Статистика":
-            self.show_about_page()
+            self.show_statistics_main_page()
+
+    def update_statistics(self, task_type, is_correct):
+        """Обновляет статистику выполнения заданий"""
+        try:
+            import json
+            import os
+
+            stats_file = "user_statistics.json"
+
+            # Загружаем текущую статистику
+            default_stats = {
+                "task_19": {"correct": 0, "incorrect": 0, "total": 0},
+                "task_20": {"correct": 0, "incorrect": 0, "total": 0},
+                "task_21": {"correct": 0, "incorrect": 0, "total": 0}
+            }
+
+            stats = default_stats
+            if os.path.exists(stats_file):
+                try:
+                    with open(stats_file, 'r', encoding='utf-8') as f:
+                        stats = json.load(f)
+                except:
+                    stats = default_stats
+
+            # Обновляем статистику
+            if task_type in stats:
+                if is_correct:
+                    stats[task_type]["correct"] += 1
+                else:
+                    stats[task_type]["incorrect"] += 1
+                stats[task_type]["total"] += 1
+
+            # Сохраняем обновленную статистику
+            with open(stats_file, 'w', encoding='utf-8') as f:
+                json.dump(stats, f, ensure_ascii=False, indent=2)
+
+            print(f"Статистика обновлена: {task_type}, правильный: {is_correct}")
+
+        except Exception as e:
+            print(f"Ошибка обновления статистики: {e}")
+
 
 
 if __name__ == '__main__':
