@@ -4,6 +4,7 @@ from kivymd.uix.card import MDCard
 from kivy.uix.image import Image
 from kivy.uix.scrollview import ScrollView
 from kivy.metrics import dp
+from kivy.core.window import Window
 
 
 class ClickableCard(MDCard):
@@ -45,19 +46,17 @@ class StatisticsMainPage(MDBoxLayout):
         self.main_app = main_app
         self.orientation = 'vertical'
 
-        # Контейнер для контента
         self.content_layout = MDBoxLayout(orientation='vertical', size_hint_y=1)
         self.add_widget(self.content_layout)
 
-        # Показываем контент страницы
         self.show_content()
 
     def create_stat_block(self, title, description, bg_color, image_path, on_click_func):
-        """Создает блок статистики"""
+        """Создает адаптивный блок статистики"""
         card = ClickableCard(
             orientation='horizontal',
             size_hint_y=None,
-            height=dp(140),
+            height=dp(150),
             padding=dp(15),
             spacing=dp(15),
             md_bg_color=bg_color,
@@ -65,40 +64,70 @@ class StatisticsMainPage(MDBoxLayout):
             elevation=3,
         )
 
-        # Изображение слева
-        card.add_widget(Image(
+        # Левое изображение
+        image = Image(
             source=image_path,
             size_hint_x=None,
-            width=dp(110),
+            width=dp(100),
             allow_stretch=True,
             keep_ratio=True
-        ))
+        )
+        card.add_widget(image)
 
-        # Текст справа
-        text_box = MDBoxLayout(orientation='vertical', spacing=dp(8))
+        # Правый блок текста
+        text_box = MDBoxLayout(
+            orientation='vertical',
+            spacing=dp(6),
+            adaptive_height=True
+        )
 
         # Заголовок
-        text_box.add_widget(MDLabel(
+        title_label = MDLabel(
             text=title,
             halign='left',
             theme_text_color='Primary',
-            font_style='H5',
+            font_style='H6',
+            bold=True,
             size_hint_y=None,
-            height=dp(35),
-            bold=True
-        ))
+            text_size=(Window.width - dp(220), None),
+            shorten=False
+        )
+        title_label.bind(
+            texture_size=lambda lbl, size: setattr(lbl, 'height', size[1])
+        )
 
         # Описание
-        text_box.add_widget(MDLabel(
+        desc_label = MDLabel(
             text=description,
             halign='left',
             theme_text_color='Secondary',
             font_style='Body1',
             size_hint_y=None,
-            height=dp(60),
-        ))
+            text_size=(Window.width - dp(220), None),
+            shorten=False
+        )
+        desc_label.bind(
+            texture_size=lambda lbl, size: setattr(lbl, 'height', size[1])
+        )
 
+        text_box.add_widget(title_label)
+        text_box.add_widget(desc_label)
         card.add_widget(text_box)
+
+        # Привязка высоты карточки к содержимому
+        def update_card_height(*_):
+            total_height = (
+                dp(30) +  # отступы
+                title_label.height +
+                desc_label.height +
+                dp(30)
+            )
+            card.height = max(dp(130), total_height)
+
+        title_label.bind(height=update_card_height)
+        desc_label.bind(height=update_card_height)
+        Window.bind(width=lambda *_: update_card_height())
+
         card.on_click = on_click_func
         return card
 
@@ -106,89 +135,63 @@ class StatisticsMainPage(MDBoxLayout):
         """Показывает главную страницу статистики"""
         self.content_layout.clear_widgets()
 
-        # Создаем ScrollView для контента
-        scroll_view = ScrollView(
-            do_scroll_x=False,
-            scroll_distance=10,
-            scroll_timeout=200
-        )
+        scroll_view = ScrollView(do_scroll_x=False)
 
-        # Создаем контейнер для блоков
         content_container = MDBoxLayout(
             orientation='vertical',
             padding=dp(25),
             spacing=dp(25),
             size_hint_y=None
         )
-
-        # Автоматическая высота контейнера
         content_container.bind(minimum_height=content_container.setter('height'))
 
-        # Заголовок страницы
         header_label = MDLabel(
             text="Статистика выполнения заданий",
             theme_text_color='Primary',
             font_style='H4',
             size_hint_y=None,
-            height=dp(50),
             halign="center",
             bold=True
         )
+        header_label.bind(texture_size=header_label.setter('size'))
         content_container.add_widget(header_label)
 
-        # Блок 1 - Статистика по заданию 19
-        stat_block1 = self.create_stat_block(
-            "Статистика: Задание 19",
-            "Детальная статистика по выполнению задания 19. Графики и анализ прогресса.",
-            (0.9, 0.95, 1, 1),
-            "free-icon-stats-223407.png",
-            lambda: self.main_app.show_statistics_detail_page("statistics_19")
-        )
+        # Карточки
+        blocks = [
+            ("Статистика: Задание 19",
+             "Детальная статистика по выполнению задания 19. Графики и анализ прогресса.",
+             (0.9, 0.95, 1, 1),
+             lambda: self.main_app.show_statistics_detail_page("statistics_19")),
 
-        # Блок 2 - Статистика по заданию 20
-        stat_block2 = self.create_stat_block(
-            "Статистика: Задание 20",
-            "Детальная статистика по выполнению задания 20. Графики и анализ прогресса.",
-            (0.95, 0.98, 0.95, 1),
-            "free-icon-stats-223407.png",
-            lambda: self.main_app.show_statistics_detail_page("statistics_20")
-        )
+            ("Статистика: Задание 20",
+             "Детальная статистика по выполнению задания 20. Графики и анализ прогресса.",
+             (0.95, 0.98, 0.95, 1),
+             lambda: self.main_app.show_statistics_detail_page("statistics_20")),
 
-        # Блок 3 - Статистика по заданию 21
-        stat_block3 = self.create_stat_block(
-            "Статистика: Задание 21",
-            "Детальная статистика по выполнению задания 21. Графики и анализ прогресса.",
-            (1, 0.95, 0.95, 1),
-            "free-icon-stats-223407.png",
-            lambda: self.main_app.show_statistics_detail_page("statistics_21")
-        )
+            ("Статистика: Задание 21",
+             "Детальная статистика по выполнению задания 21. Графики и анализ прогресса.",
+             (1, 0.95, 0.95, 1),
+             lambda: self.main_app.show_statistics_detail_page("statistics_21")),
 
-        # Блок 4 - Общая статистика
-        stat_block4 = self.create_stat_block(
-            "Общая статистика",
-            "Сводная статистика по всем заданиям. Сравнительный анализ прогресса.",
-            (0.98, 0.95, 1, 1),
-            "free-icon-stats-223407.png",
-            lambda: self.main_app.show_statistics_detail_page("statistics_total")
-        )
+            ("Общая статистика",
+             "Сводная статистика по всем заданиям. Сравнительный анализ прогресса.",
+             (0.98, 0.95, 1, 1),
+             lambda: self.main_app.show_statistics_detail_page("statistics_total")),
+        ]
 
-        # Добавляем блоки в контейнер
-        content_container.add_widget(stat_block1)
-        content_container.add_widget(stat_block2)
-        content_container.add_widget(stat_block3)
-        content_container.add_widget(stat_block4)
+        for title, desc, color, func in blocks:
+            card = self.create_stat_block(title, desc, color, "free-icon-stats-223407.png", func)
+            content_container.add_widget(card)
 
-        # Описание страницы
-        description_label = MDLabel(
+        footer_label = MDLabel(
             text="Выберите раздел для просмотра детальной статистики выполнения заданий",
             theme_text_color='Secondary',
             font_style='Body2',
-            size_hint_y=None,
-            height=dp(60),
-            halign="center"
+            halign="center",
+            size_hint_y=None
         )
-        description_label.bind(texture_size=description_label.setter('size'))
-        content_container.add_widget(description_label)
+        footer_label.bind(texture_size=footer_label.setter('size'))
+        content_container.add_widget(footer_label)
 
         scroll_view.add_widget(content_container)
         self.content_layout.add_widget(scroll_view)

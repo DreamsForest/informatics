@@ -23,8 +23,8 @@ class ClickableCard(MDCard):
 
     def on_touch_move(self, touch):
         if self.is_touching:
-            # Если началось движение - это скролл, отменяем клик
-            if abs(touch.dx) > 5 or abs(touch.dy) > 5:  # порог для определения скролла
+            # Если началось движение — это скролл, отменяем клик
+            if abs(touch.dx) > 5 or abs(touch.dy) > 5:
                 self.is_touching = False
                 self.elevation = 3
         return super().on_touch_move(touch)
@@ -54,42 +54,47 @@ class SelectTaskPage(MDBoxLayout):
         card = ClickableCard(
             orientation='horizontal',
             size_hint_y=None,
-            height=dp(140),  # Увеличил высоту для лучшего отображения
-            padding=dp(15),
-            spacing=dp(15),
+            padding=dp(20),
+            spacing=dp(20),
             md_bg_color=bg_color,
-            radius=[dp(15)],
-            elevation=3,  # Увеличил elevation для лучшего визуального эффекта
+            radius=[dp(20)],
+            elevation=3,
+            adaptive_height=True,  # Автоматическая высота
         )
 
         # Изображение слева
         card.add_widget(Image(
             source=image_path,
             size_hint_x=None,
-            width=dp(110),  # Увеличил ширину изображения
+            width=dp(130),  # шире, чем раньше
             allow_stretch=True,
             keep_ratio=True
         ))
 
         # Текст справа
-        text_box = MDBoxLayout(orientation='vertical', spacing=dp(8))
-        text_box.add_widget(MDLabel(
+        text_box = MDBoxLayout(orientation='vertical', spacing=dp(10), adaptive_height=True)
+
+        # Заголовок
+        title_label = MDLabel(
             text=title,
             halign='left',
             theme_text_color='Primary',
-            font_style='H5',  # Увеличил размер шрифта
-            size_hint_y=None,
-            height=dp(35),
-            bold=True
-        ))
-        text_box.add_widget(MDLabel(
+            font_style='H5',
+            bold=True,
+            adaptive_height=True
+        )
+
+        # Описание
+        desc_label = MDLabel(
             text=description,
             halign='left',
             theme_text_color='Secondary',
-            font_style='Body1',  # Увеличил размер шрифта
-            size_hint_y=None,
-            height=dp(60),
-        ))
+            font_style='Body1',
+            adaptive_height=True
+        )
+
+        text_box.add_widget(title_label)
+        text_box.add_widget(desc_label)
         card.add_widget(text_box)
 
         card.on_click = on_click_func
@@ -98,30 +103,26 @@ class SelectTaskPage(MDBoxLayout):
     def show_content(self):
         self.content_layout.clear_widgets()
 
-        # Настроенный ScrollView
         scroll_view = ScrollView(
             do_scroll_x=False,
-            scroll_distance=10,  # Минимальное расстояние для начала скролла
-            scroll_timeout=200  # Таймаут для определения скролла
+            scroll_distance=10,
+            scroll_timeout=200
         )
 
         content_container = MDBoxLayout(
             orientation='vertical',
             padding=dp(25),
-            spacing=dp(25),
+            spacing=dp(30),
             size_hint_y=None
         )
 
-        # Автоматическая высота контейнера
         content_container.bind(minimum_height=content_container.setter('height'))
-
-
 
         # Блоки заданий
         task_block1 = self.create_task_block(
             "Задание №19",
             "Выигрышная стратегия 1. Задания с одной и двумя кучами. Базовый уровень сложности.",
-            (0.9, 0.95, 1, 1),  # нежно-голубой
+            (0.9, 0.95, 1, 1),
             "free-icon-computer-science-7897147.png",
             lambda: self.main_app.show_task_page("task_19")
         )
@@ -129,7 +130,7 @@ class SelectTaskPage(MDBoxLayout):
         task_block2 = self.create_task_block(
             "Задание №20",
             "Выигрышная стратегия 2. Задания с одной и двумя кучами. Средний уровень сложности.",
-            (0.95, 0.98, 0.95, 1),  # нежно-зеленый
+            (0.95, 0.98, 0.95, 1),
             "free-icon-computer-scientist-2316086.png",
             lambda: self.main_app.show_task_page("task_20")
         )
@@ -137,7 +138,7 @@ class SelectTaskPage(MDBoxLayout):
         task_block3 = self.create_task_block(
             "Задание №21",
             "Выигрышная стратегия 3. Задания с одной и двумя кучами. Продвинутый уровень сложности.",
-            (1, 0.95, 0.95, 1),  # нежно-розовый
+            (1, 0.95, 0.95, 1),
             "free-icon-informatics-8824184.png",
             lambda: self.main_app.show_task_page("task_21")
         )
@@ -150,13 +151,12 @@ class SelectTaskPage(MDBoxLayout):
         description_label = MDLabel(
             text="Выберите задание для практики. Каждое задание генерируется случайным образом с разными параметрами.",
             theme_text_color='Secondary',
-            font_style='Body2',
+            font_style='Body1',
+            halign="center",
+            adaptive_height=True,
             size_hint_y=None,
-            height=dp(60),
-            halign="center"
         )
-        description_label.bind(texture_size=description_label.setter('size'))
-        content_container.add_widget(description_label)
 
+        content_container.add_widget(description_label)
         scroll_view.add_widget(content_container)
         self.content_layout.add_widget(scroll_view)
