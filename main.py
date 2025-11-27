@@ -9,16 +9,18 @@ from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.scrollview import ScrollView
 from kivy.uix.anchorlayout import AnchorLayout
 from kivy.metrics import dp
-from kivy.core.window import Window
 
 # Импортируем классы страниц
 from statistics_main_page import StatisticsMainPage
-from statistics_19_page import Statistics19Page
+from statistics_19_page import Statistics19Page  # ← обновлённая версия с kivy_garden.graph
 from statistics_20_page import Statistics20Page
 from statistics_21_page import Statistics21Page
 from statistics_total_page import StatisticsTotalPage
 from select_task_page import SelectTaskPage
 from theory_page import TheoryPage
+from theory_19_page import Theory19Page
+from theory_20_page import Theory20Page
+from theory_21_page import Theory21Page
 from task_19_page import Task19Page
 from task_20_page import Task20Page
 from task_21_page import Task21Page
@@ -26,340 +28,196 @@ from task_21_page import Task21Page
 
 class MainApp(MDApp):
     def build(self):
-        # Главный layout - используем AnchorLayout для правильного позиционирования drawer
-        self.root_layout = AnchorLayout()
+        try:
+            self.root_layout = AnchorLayout()
+            self.main_container = BoxLayout(orientation='vertical')
+            self.root_layout.add_widget(self.main_container)
 
-        # Основной контейнер с контентом
-        self.main_container = BoxLayout(orientation='vertical')
-        self.root_layout.add_widget(self.main_container)
+            # Верхняя панель
+            self.toolbar = MDTopAppBar(
+                title="Главная страница",
+                left_action_items=[["menu", lambda x: self.toggle_nav_drawer()]],
+                elevation=10,
+                md_bg_color=(0.2, 0.6, 0.8, 1),
+                size_hint_y=None,
+                height=dp(56)
+            )
 
-        # Панель инструментов
-        self.toolbar = MDTopAppBar(
-            title="Главная страница",
-            left_action_items=[["menu", lambda x: self.toggle_nav_drawer()]],
-            elevation=10,
-            md_bg_color=(0.2, 0.6, 0.8, 1),
-            size_hint_y=None,
-            height=dp(56)
-        )
+            # Контент
+            self.main_content = BoxLayout(orientation='vertical', size_hint_y=1)
+            self.show_main_page()
 
-        # Контейнер для основного контента
-        self.main_content = BoxLayout(orientation='vertical', size_hint_y=1)
+            self.main_container.add_widget(self.toolbar)
+            self.main_container.add_widget(self.main_content)
+            self.create_navigation_drawer()
 
-        # Главная страница по умолчанию
-        self.show_main_page()
+            return self.root_layout
 
-        # Добавляем в основной контейнер
-        self.main_container.add_widget(self.toolbar)
-        self.main_container.add_widget(self.main_content)
+        except Exception as e:
+            from kivy.uix.label import Label
+            import traceback
+            error_msg = f"Ошибка запуска: {str(e)}\n{traceback.format_exc()}"
+            print(error_msg)
+            return Label(text=error_msg)
 
-        # Навигационное меню
-        self.create_navigation_drawer()
-
-        return self.root_layout
-
-    def show_theory_detail_page(self, theory_type):
-        """Показывает страницу с детальной теорией"""
-        self.main_content.clear_widgets()
-
-        if theory_type == "theory_19":
-            self.toolbar.title = "Теория: Задание 19"
-            from theory_19_page import Theory19Page
-            theory_page = Theory19Page(main_app=self)
-        elif theory_type == "theory_20":
-            self.toolbar.title = "Теория: Задание 20"
-            from theory_20_page import Theory20Page
-            theory_page = Theory20Page(main_app=self)
-        elif theory_type == "theory_21":
-            self.toolbar.title = "Теория: Задание 21"
-            from theory_21_page import Theory21Page
-            theory_page = Theory21Page(main_app=self)
-        else:
-            return
-
-        self.main_content.add_widget(theory_page)
-
-    def show_statistics_main_page(self):
-        """Показывает главную страницу статистики"""
-        self.main_content.clear_widgets()
-        self.toolbar.title = "Статистика"
-        stats_page = StatisticsMainPage(main_app=self)
-        self.main_content.add_widget(stats_page)
-
-    def show_statistics_detail_page(self, stats_type):
-        """Показывает детальную страницу статистики"""
-        self.main_content.clear_widgets()
-
-        if stats_type == "statistics_19":
-            self.toolbar.title = "Статистика: Задание 19"
-            stats_page = Statistics19Page(main_app=self)
-        elif stats_type == "statistics_20":
-            self.toolbar.title = "Статистика: Задание 20"
-            stats_page = Statistics20Page(main_app=self)
-        elif stats_type == "statistics_21":
-            self.toolbar.title = "Статистика: Задание 21"
-            stats_page = Statistics21Page(main_app=self)
-        elif stats_type == "statistics_total":
-            self.toolbar.title = "Общая статистика"
-            stats_page = StatisticsTotalPage(main_app=self)
-        else:
-            return
-
-        self.main_content.add_widget(stats_page)
-
+    # -----------------------------
+    # Основные страницы приложения
+    # -----------------------------
     def show_main_page(self):
-        """Показывает главную страницу с 3 блоками"""
         self.main_content.clear_widgets()
         self.toolbar.title = "Главная страница"
 
-        # Создаем ScrollView для контента
         scroll_view = ScrollView(do_scroll_x=False)
-
-        # Создаем контейнер для блоков
         content_layout = BoxLayout(
             orientation='vertical',
             padding=dp(20),
             spacing=dp(20),
             size_hint_y=None
         )
+        content_layout.height = dp(120) * 3 + dp(20) * 4
 
-        # Устанавливаем высоту контента
-        content_layout.height = dp(120) * 3 + dp(20) * 4  # 3 блока + отступы
-
-        # Первый блок - Теория
-        info_block1 = MDCard(
-            orientation='vertical',
-            size_hint_y=None,
-            height=dp(120),
-            padding=dp(15),
-            spacing=dp(10),
-            md_bg_color=(0.9, 0.95, 1, 1),
-            radius=[dp(15)],
-            elevation=2
+        # === Блок Теория ===
+        info_block1 = self.create_block(
+            title="Теория",
+            subtitle="Изучите теоретические материалы перед выполнением заданий",
+            color=(0.9, 0.95, 1, 1),
+            callback=lambda: self.show_theory_page()
         )
-        info_block1.add_widget(MDLabel(
-            text="Теория",
-            halign='center',
-            theme_text_color='Primary',
-            font_style='H5',
-            size_hint_y=None,
-            height=dp(40)
-        ))
-        info_block1.add_widget(MDLabel(
-            text="Изучите теоретические материалы перед выполнением заданий",
-            halign='center',
-            theme_text_color='Secondary',
-            font_style='Body2',
-            size_hint_y=None,
-            height=dp(60)
-        ))
-
-        # Добавляем обработчик клика для блока Теория
-        info_block1.bind(on_touch_down=lambda instance, touch: self._on_block_click(instance, touch, "theory"))
-
-        # Второй блок - Задания
-        info_block2 = MDCard(
-            orientation='vertical',
-            size_hint_y=None,
-            height=dp(120),
-            padding=dp(15),
-            spacing=dp(10),
-            md_bg_color=(0.95, 0.98, 0.95, 1),
-            radius=[dp(15)],
-            elevation=2
-        )
-        info_block2.add_widget(MDLabel(
-            text="Задания",
-            halign='center',
-            theme_text_color='Primary',
-            font_style='H5',
-            size_hint_y=None,
-            height=dp(40)
-        ))
-        info_block2.add_widget(MDLabel(
-            text="Практикуйтесь на различных заданиях разного уровня сложности",
-            halign='center',
-            theme_text_color='Secondary',
-            font_style='Body2',
-            size_hint_y=None,
-            height=dp(60)
-        ))
-
-        # Добавляем обработчик клика для блока Задания
-        info_block2.bind(on_touch_down=lambda instance, touch: self._on_block_click(instance, touch, "tasks"))
-
-        # Третий блок - Статистика
-        info_block3 = MDCard(
-            orientation='vertical',
-            size_hint_y=None,
-            height=dp(120),
-            padding=dp(15),
-            spacing=dp(10),
-            md_bg_color=(1, 0.95, 0.95, 1),
-            radius=[dp(15)],
-            elevation=2
-        )
-        info_block3.add_widget(MDLabel(
-            text="Статистика",
-            halign='center',
-            theme_text_color='Primary',
-            font_style='H5',
-            size_hint_y=None,
-            height=dp(40)
-        ))
-        info_block3.add_widget(MDLabel(
-            text="Узнайте свою статистику по пройденным заданиям",
-            halign='center',
-            theme_text_color='Secondary',
-            font_style='Body2',
-            size_hint_y=None,
-            height=dp(60)
-        ))
-
-        # Добавляем обработчик клика для блока Статистика
-        info_block3.bind(on_touch_down=lambda instance, touch: self._on_block_click(instance, touch, "statistics"))
-
-        # Добавляем блоки в контейнер
         content_layout.add_widget(info_block1)
+
+        # === Блок Задания ===
+        info_block2 = self.create_block(
+            title="Задания",
+            subtitle="Практикуйтесь на заданиях разного уровня сложности",
+            color=(0.95, 0.98, 0.95, 1),
+            callback=lambda: self.show_select_task_page()
+        )
         content_layout.add_widget(info_block2)
+
+        # === Блок Статистика ===
+        info_block3 = self.create_block(
+            title="Статистика",
+            subtitle="Просмотрите результаты выполнения заданий",
+            color=(1, 0.95, 0.95, 1),
+            callback=lambda: self.show_statistics_main_page()
+        )
         content_layout.add_widget(info_block3)
 
         scroll_view.add_widget(content_layout)
         self.main_content.add_widget(scroll_view)
 
-    def _on_block_click(self, instance, touch, block_type):
-        """Обрабатывает клик по блокам на главной странице"""
-        if instance.collide_point(*touch.pos):
-            if touch.button == 'left':  # Только левая кнопка мыши
-                if block_type == "theory":
-                    self.show_theory_page()
-                elif block_type == "tasks":
-                    self.show_select_task_page()
-                elif block_type == "statistics":
-                    self.show_statistics_main_page()
-                return True  # Обработали событие
-        return False  # Не обрабатываем
-
-    def show_select_task_page(self):
-        """Показывает страницу 'Выбрать задание'"""
-        self.main_content.clear_widgets()
-        self.toolbar.title = "Выбрать задание"
-        select_task_page = SelectTaskPage(main_app=self)
-        self.main_content.add_widget(select_task_page)
-
-    def show_theory_page(self):
-        """Показывает страницу 'Ознакомление с теорией'"""
-        self.main_content.clear_widgets()
-        self.toolbar.title = "Ознакомление с теорией"
-        theory_page = TheoryPage(main_app=self)
-        self.main_content.add_widget(theory_page)
-
-    def show_task_page(self, task_type):
-        """Показывает страницу с конкретным заданием"""
-        self.main_content.clear_widgets()
-
-        if task_type == "task_19":
-            self.toolbar.title = "Задание №19"
-            task_page = Task19Page(main_app=self)
-        elif task_type == "task_20":
-            self.toolbar.title = "Задание №20"
-            task_page = Task20Page(main_app=self)
-        elif task_type == "task_21":
-            self.toolbar.title = "Задание №21"
-            task_page = Task21Page(main_app=self)
-        else:
-            return
-
-        self.main_content.add_widget(task_page)
-
-    def create_navigation_drawer(self):
-        self.nav_drawer = MDNavigationDrawer(
-            size_hint=(0.8, 1),
-            elevation=20,
-            radius=(0, 16, 16, 0),
-            state="close"
-        )
-
-        drawer_content = BoxLayout(orientation='vertical', spacing=0)
-
-        header = BoxLayout(
+    def create_block(self, title, subtitle, color, callback):
+        """Создаёт карточку блока с обработкой клика."""
+        card = MDCard(
             orientation='vertical',
             size_hint_y=None,
-            height=dp(100),
-            padding=[20, 15, 20, 10],
-            spacing=8
+            height=dp(120),
+            padding=dp(15),
+            spacing=dp(10),
+            md_bg_color=color,
+            radius=[dp(15)],
+            elevation=3
         )
-        header.add_widget(MDLabel(
-            text="Меню",
+        card.add_widget(MDLabel(
+            text=title,
             halign='center',
             theme_text_color='Primary',
-            font_style='H4',
+            font_style='H5',
             size_hint_y=None,
             height=dp(40)
         ))
-        header.add_widget(MDLabel(
-            text="Добро пожаловать!",
+        card.add_widget(MDLabel(
+            text=subtitle,
             halign='center',
             theme_text_color='Secondary',
-            font_style='Body1',
+            font_style='Body2',
             size_hint_y=None,
-            height=dp(30)
+            height=dp(60)
         ))
+        card.bind(on_touch_down=lambda instance, touch: callback() if instance.collide_point(*touch.pos) else None)
+        return card
 
-        scroll = ScrollView(do_scroll_x=False)
-        menu_list = MDList(spacing=1)
-        menu_list.size_hint_y = None
-        menu_list.bind(minimum_height=menu_list.setter('height'))
+    # --- Навигация ---
+    def show_select_task_page(self):
+        self.main_content.clear_widgets()
+        self.toolbar.title = "Выбрать задание"
+        self.main_content.add_widget(SelectTaskPage(main_app=self))
 
-        menu_items = [
-            "Главная", "Выбрать задание", "Ознакомление с теорией", "Статистика"
-        ]
+    def show_theory_page(self):
+        self.main_content.clear_widgets()
+        self.toolbar.title = "Ознакомление с теорией"
+        self.main_content.add_widget(TheoryPage(main_app=self))
 
-        for item in menu_items:
+    def show_statistics_main_page(self):
+        self.main_content.clear_widgets()
+        self.toolbar.title = "Статистика"
+        self.main_content.add_widget(StatisticsMainPage(main_app=self))
+
+    def show_statistics_detail_page(self, stats_type):
+        """Открывает конкретную страницу статистики"""
+        self.main_content.clear_widgets()
+        if stats_type == "statistics_19":
+            self.toolbar.title = "Статистика: Задание 19"
+            self.main_content.add_widget(Statistics19Page(main_app=self))
+        elif stats_type == "statistics_20":
+            self.toolbar.title = "Статистика: Задание 20"
+            self.main_content.add_widget(Statistics20Page(main_app=self))
+        elif stats_type == "statistics_21":
+            self.toolbar.title = "Статистика: Задание 21"
+            self.main_content.add_widget(Statistics21Page(main_app=self))
+        elif stats_type == "statistics_total":
+            self.toolbar.title = "Общая статистика"
+            self.main_content.add_widget(StatisticsTotalPage(main_app=self))
+
+    def show_task_page(self, task_type):
+        self.main_content.clear_widgets()
+        if task_type == "task_19":
+            self.toolbar.title = "Задание №19"
+            self.main_content.add_widget(Task19Page(main_app=self))
+        elif task_type == "task_20":
+            self.toolbar.title = "Задание №20"
+            self.main_content.add_widget(Task20Page(main_app=self))
+        elif task_type == "task_21":
+            self.toolbar.title = "Задание №21"
+            self.main_content.add_widget(Task21Page(main_app=self))
+
+    # --- Меню ---
+    def create_navigation_drawer(self):
+        self.nav_drawer = MDNavigationDrawer(size_hint=(0.8, 1), elevation=20, radius=(0, 16, 16, 0))
+        drawer_content = BoxLayout(orientation='vertical')
+        header = MDLabel(text="Меню", halign='center', font_style='H4', size_hint_y=None, height=dp(60))
+        drawer_content.add_widget(header)
+
+        scroll = ScrollView()
+        menu_list = MDList()
+        for item in ["Главная", "Выбрать задание", "Ознакомление с теорией", "Статистика"]:
             list_item = OneLineListItem(
                 text=item,
-                on_release=lambda x, item=item: self.menu_item_clicked(item),
-                theme_text_color="Primary",
-                _no_ripple_effect=False,
-                height=dp(56),
-                size_hint_y=None
+                on_release=lambda x, item=item: self.menu_item_clicked(item)
             )
             menu_list.add_widget(list_item)
-
         scroll.add_widget(menu_list)
+        drawer_content.add_widget(scroll)
 
-        footer = BoxLayout(size_hint_y=None, height=dp(60), padding=[20, 10, 20, 15])
-        close_button = MDRaisedButton(
+        footer = BoxLayout(size_hint_y=None, height=dp(60))
+        footer.add_widget(MDRaisedButton(
             text="Закрыть",
             size_hint=(None, None),
             size=(dp(120), dp(48)),
-            on_release=lambda x: self.nav_drawer.set_state('close')
-        )
-        footer.add_widget(BoxLayout())
-        footer.add_widget(close_button)
-        footer.add_widget(BoxLayout())
-
-        drawer_content.add_widget(header)
-        drawer_content.add_widget(scroll)
+            pos_hint={"center_x": 0.5},
+            on_release=lambda x: self.nav_drawer.set_state("close")
+        ))
         drawer_content.add_widget(footer)
 
         self.nav_drawer.add_widget(drawer_content)
-
-        # Добавляем drawer в корневой AnchorLayout (он будет поверх основного контента)
         self.root_layout.add_widget(self.nav_drawer)
-        self.nav_drawer.set_state('close')
+        self.nav_drawer.set_state("close")
 
     def toggle_nav_drawer(self):
-        if self.nav_drawer.state == 'open':
-            self.nav_drawer.set_state('close')
-        else:
-            self.nav_drawer.set_state('open')
+        self.nav_drawer.set_state('close' if self.nav_drawer.state == 'open' else 'open')
 
     def menu_item_clicked(self, item):
-        print(f"Выбран пункт: {item}")
         self.nav_drawer.set_state('close')
-
-        # Обработка выбора пунктов меню
         if item == "Главная":
             self.show_main_page()
         elif item == "Выбрать задание":
@@ -369,46 +227,48 @@ class MainApp(MDApp):
         elif item == "Статистика":
             self.show_statistics_main_page()
 
+    # --- Работа со статистикой ---
     def update_statistics(self, task_type, is_correct):
-        """Обновляет статистику выполнения заданий"""
         try:
-            import json
-            import os
+            from kivy.storage.jsonstore import JsonStore
+            store = JsonStore('user_statistics.json')
 
-            stats_file = "user_statistics.json"
-
-            # Загружаем текущую статистику
             default_stats = {
                 "task_19": {"correct": 0, "incorrect": 0, "total": 0},
                 "task_20": {"correct": 0, "incorrect": 0, "total": 0},
                 "task_21": {"correct": 0, "incorrect": 0, "total": 0}
             }
 
-            stats = default_stats
-            if os.path.exists(stats_file):
-                try:
-                    with open(stats_file, 'r', encoding='utf-8') as f:
-                        stats = json.load(f)
-                except:
-                    stats = default_stats
-
-            # Обновляем статистику
+            stats = store.get('statistics') if store.exists('statistics') else default_stats
             if task_type in stats:
                 if is_correct:
                     stats[task_type]["correct"] += 1
                 else:
                     stats[task_type]["incorrect"] += 1
                 stats[task_type]["total"] += 1
-
-            # Сохраняем обновленную статистику
-            with open(stats_file, 'w', encoding='utf-8') as f:
-                json.dump(stats, f, ensure_ascii=False, indent=2)
-
-            print(f"Статистика обновлена: {task_type}, правильный: {is_correct}")
-
+                store.put('statistics', **stats)
         except Exception as e:
             print(f"Ошибка обновления статистики: {e}")
 
+    def get_statistics(self):
+        try:
+            from kivy.storage.jsonstore import JsonStore
+            store = JsonStore('user_statistics.json')
+            if store.exists('statistics'):
+                return store.get('statistics')
+            else:
+                return {
+                    "task_19": {"correct": 0, "incorrect": 0, "total": 0},
+                    "task_20": {"correct": 0, "incorrect": 0, "total": 0},
+                    "task_21": {"correct": 0, "incorrect": 0, "total": 0}
+                }
+        except Exception as e:
+            print(f"Ошибка получения статистики: {e}")
+            return {
+                "task_19": {"correct": 0, "incorrect": 0, "total": 0},
+                "task_20": {"correct": 0, "incorrect": 0, "total": 0},
+                "task_21": {"correct": 0, "incorrect": 0, "total": 0}
+            }
 
 
 if __name__ == '__main__':
