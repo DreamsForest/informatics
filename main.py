@@ -181,6 +181,23 @@ class MainApp(MDApp):
             self.toolbar.title = "Задание №21"
             self.main_content.add_widget(Task21Page(main_app=self))
 
+    def show_theory_detail_page(self, theory_type):
+        """Показывает страницу с детальной теорией"""
+        self.main_content.clear_widgets()
+
+        if theory_type == "theory_19":
+            self.toolbar.title = "Теория: Задание 19"
+            theory_page = Theory19Page(main_app=self)
+        elif theory_type == "theory_20":
+            self.toolbar.title = "Теория: Задание 20"
+            theory_page = Theory20Page(main_app=self)
+        elif theory_type == "theory_21":
+            self.toolbar.title = "Теория: Задание 21"
+            theory_page = Theory21Page(main_app=self)
+        else:
+            return
+
+        self.main_content.add_widget(theory_page)
     # --- Меню ---
     def create_navigation_drawer(self):
         self.nav_drawer = MDNavigationDrawer(size_hint=(0.8, 1), elevation=20, radius=(0, 16, 16, 0))

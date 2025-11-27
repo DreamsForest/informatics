@@ -5,7 +5,8 @@ from kivymd.uix.button import MDRaisedButton, MDFlatButton
 from kivymd.uix.scrollview import ScrollView
 from kivy.uix.boxlayout import BoxLayout
 from kivy.metrics import dp
-import pyperclip
+from kivy.core.clipboard import Clipboard
+from kivymd.uix.snackbar import Snackbar
 
 
 class SyntaxHighlighter:
@@ -158,7 +159,7 @@ class CodeCard(MDCard):
         # Контейнер для кода с прокруткой
         code_scroll = ScrollView(
             size_hint_y=None,
-            height=dp(350),
+            height=dp(300),
             do_scroll_x=False,
             bar_color=(0.5, 0.5, 0.7, 1)
         )
@@ -207,11 +208,19 @@ class CodeCard(MDCard):
     def copy_code(self, code, language):
         """Копирует код в буфер обмена"""
         try:
-            pyperclip.copy(code)
-            # Можно добавить уведомление о копировании
+            Clipboard.copy(code)
+            # Показываем уведомление о копировании
+            Snackbar(
+                text=f"Код на {language} скопирован в буфер обмена!",
+                duration=2
+            ).open()
             print(f"Код на {language} скопирован в буфер обмена")
         except Exception as e:
             print(f"Ошибка копирования: {e}")
+            Snackbar(
+                text="Ошибка копирования в буфер обмена",
+                duration=2
+            ).open()
 
 
 class Theory21Page(MDBoxLayout):
@@ -243,7 +252,7 @@ class Theory21Page(MDBoxLayout):
 
         # Заголовок
         title_label = MDLabel(
-            text="Теория: Задание 21 - выигрышная стратегия 3",
+            text="Теория: Задание 21 - Выигрышная стратегия 3",
             theme_text_color='Primary',
             font_style='H5',
             size_hint_y=None,
@@ -540,72 +549,7 @@ multiply = 2
 
 # Находим решение
 solution = analyze_complex_game(target, moves, multiply)
-print(f"Минимальное S, удовлетворяющее условиям: {solution}")
-
-# Альтернативный подход с полным деревом игры
-def build_game_tree(target, moves, multiply, max_depth=4):
-    """
-    Строит дерево игры для глубокого анализа.
-    """
-    # Словарь для хранения информации о позициях
-    game_tree = {}
-
-    # Заполняем дерево от конечных позиций
-    for stones in range(target * 2, -1, -1):
-        if stones >= target:
-            game_tree[stones] = {'win_in': 0, 'can_win': True}
-        else:
-            # Анализируем все возможные ходы
-            next_positions = []
-            for move in moves:
-                next_positions.append(stones + move)
-            next_positions.append(stones * multiply)
-
-            # Находим минимальное количество ходов до победы
-            min_win_moves = float('inf')
-            can_win = False
-
-            for next_pos in next_positions:
-                if next_pos in game_tree and game_tree[next_pos]['can_win']:
-                    can_win = True
-                    min_win_moves = min(min_win_moves, game_tree[next_pos]['win_in'] + 1)
-
-            game_tree[stones] = {
-                'win_in': min_win_moves if can_win else float('inf'),
-                'can_win': can_win
-            }
-
-    return game_tree
-
-def find_complex_solution(game_tree, target):
-    """
-    Находит решение для задания 21 по построенному дереву игры.
-    """
-    solutions = []
-
-    for S in range(1, target):
-        if not game_tree[S]['can_win']:
-            continue
-
-        win_in = game_tree[S]['win_in']
-
-        # Проверяем сложные условия
-        # Ваня может выиграть за 1 или 2 хода
-        can_win_1_or_2 = win_in in [1, 2]
-
-        # Но не может гарантированно выиграть за 1 ход
-        # (должен быть хотя бы один вариант, где выигрыш за 2 хода)
-        cannot_guarantee_1 = True
-
-        if can_win_1_or_2 and cannot_guarantee_1:
-            solutions.append(S)
-
-    return min(solutions) if solutions else -1
-
-print("\\nАльтернативный подход с деревом игры:")
-game_tree = build_game_tree(target, moves, multiply)
-complex_solution = find_complex_solution(game_tree, target)
-print(f"Решение: {complex_solution}")'''
+print(f"Минимальное S, удовлетворяющее условиям: {solution}")'''
 
     def get_cpp_code(self):
         """Возвращает код решения на C++"""
@@ -613,8 +557,6 @@ print(f"Решение: {complex_solution}")'''
 #include <vector>
 #include <set>
 #include <algorithm>
-#include <map>
-#include <climits>
 
 using namespace std;
 
@@ -733,65 +675,6 @@ int analyzeComplexGame(int target, vector<int> moves, int multiply) {
     return complexWin.empty() ? -1 : *complexWin.begin();
 }
 
-// Альтернативный подход с деревом игры
-struct GameState {
-    int winIn;
-    bool canWin;
-};
-
-map<int, GameState> buildGameTree(int target, vector<int> moves, int multiply, int maxDepth) {
-    map<int, GameState> gameTree;
-
-    // Заполняем от больших значений к меньшим
-    for (int stones = target * 2; stones >= 0; stones--) {
-        if (stones >= target) {
-            gameTree[stones] = {0, true};
-        } else {
-            vector<int> nextPositions;
-            for (int move : moves) {
-                nextPositions.push_back(stones + move);
-            }
-            nextPositions.push_back(stones * multiply);
-
-            int minWinMoves = INT_MAX;
-            bool canWin = false;
-
-            for (int nextPos : nextPositions) {
-                if (gameTree.find(nextPos) != gameTree.end() && gameTree[nextPos].canWin) {
-                    canWin = true;
-                    minWinMoves = min(minWinMoves, gameTree[nextPos].winIn + 1);
-                }
-            }
-
-            gameTree[stones] = {
-                minWinMoves == INT_MAX ? INT_MAX : minWinMoves,
-                canWin
-            };
-        }
-    }
-
-    return gameTree;
-}
-
-int findComplexSolution(map<int, GameState>& gameTree, int target) {
-    int minS = INT_MAX;
-
-    for (int S = 1; S < target; S++) {
-        if (gameTree.find(S) == gameTree.end() || !gameTree[S].canWin) {
-            continue;
-        }
-
-        int winIn = gameTree[S].winIn;
-
-        // Проверяем условия задания 21
-        if ((winIn == 1 || winIn == 2)) {
-            minS = min(minS, S);
-        }
-    }
-
-    return minS == INT_MAX ? -1 : minS;
-}
-
 int main() {
     int target = 50;
     vector<int> moves = {1, 2};
@@ -799,12 +682,6 @@ int main() {
 
     int solution = analyzeComplexGame(target, moves, multiply);
     cout << "Минимальное S: " << solution << endl;
-
-    // Альтернативный подход
-    cout << "Альтернативный подход:" << endl;
-    auto gameTree = buildGameTree(target, moves, multiply, 4);
-    int complexSolution = findComplexSolution(gameTree, target);
-    cout << "Решение: " << complexSolution << endl;
 
     return 0;
 }'''
@@ -815,11 +692,9 @@ int main() {
 
 const
   MAX_TARGET = 100;
-  MAX_MOVES = 10;
 
 type
   BoolArray = array[0..MAX_TARGET] of Boolean;
-  IntArray = array[1..MAX_TARGET] of Integer;
 
 function AnalyzeComplexGame(target: Integer; moves: array of Integer; multiply: Integer): Integer;
 var

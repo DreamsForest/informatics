@@ -5,7 +5,8 @@ from kivymd.uix.button import MDRaisedButton, MDFlatButton
 from kivymd.uix.scrollview import ScrollView
 from kivy.uix.boxlayout import BoxLayout
 from kivy.metrics import dp
-import pyperclip
+from kivy.core.clipboard import Clipboard
+from kivymd.uix.snackbar import Snackbar
 
 
 class SyntaxHighlighter:
@@ -207,11 +208,19 @@ class CodeCard(MDCard):
     def copy_code(self, code, language):
         """Копирует код в буфер обмена"""
         try:
-            pyperclip.copy(code)
-            # Можно добавить уведомление о копировании
+            Clipboard.copy(code)
+            # Показываем уведомление о копировании
+            Snackbar(
+                text=f"Код на {language} скопирован в буфер обмена!",
+                duration=2
+            ).open()
             print(f"Код на {language} скопирован в буфер обмена")
         except Exception as e:
             print(f"Ошибка копирования: {e}")
+            Snackbar(
+                text="Ошибка копирования в буфер обмена",
+                duration=2
+            ).open()
 
 
 class Theory20Page(MDBoxLayout):
@@ -640,7 +649,7 @@ vector<int> analyzeGame(int target, vector<int> moves, int multiply) {
             }
         }
 
-        // Проверяем операцию умножения
+        # Проверяем операцию умножения
         int multPos = S * multiply;
         if (multPos < target) {
             bool vanyaCanPrevent = false;
