@@ -7,7 +7,7 @@ from kivy.metrics import dp
 from kivy.graphics import Color, Rectangle, Ellipse, Line
 from kivy.uix.widget import Widget
 from kivy.uix.boxlayout import BoxLayout
-from kivy.properties import NumericProperty, ListProperty
+from kivy.properties import ListProperty
 
 
 class Statistics19Page(MDBoxLayout):
@@ -208,7 +208,7 @@ class ColorBox(Widget):
 
 
 # ===========================
-# ИСПРАВЛЕННАЯ КРУГОВАЯ ДИАГРАММА
+# ИСПРАВЛЕННАЯ КРУГОВАЯ ДИАГРАММА (БЕЗ ЛИШНЕЙ ОБВОДКИ)
 # ===========================
 class FixedPieChart(Widget):
     def __init__(self, correct, incorrect, **kwargs):
@@ -228,16 +228,10 @@ class FixedPieChart(Widget):
         with self.canvas:
             total = self.correct + self.incorrect
 
-            # Фон
-            Color(0.95, 0.95, 0.95, 1)
-            Ellipse(pos=self.pos, size=self.size)
-
             if total == 0:
                 # Если нет данных - серый круг
                 Color(0.8, 0.8, 0.8, 1)
                 Ellipse(pos=self.pos, size=self.size)
-                Color(0.5, 0.5, 0.5, 1)
-                Line(circle=(self.center_x, self.center_y, min(self.width, self.height) / 2), width=dp(2))
             else:
                 # Правильные ответы (зеленый)
                 correct_angle = 360 * (self.correct / total)
@@ -257,10 +251,6 @@ class FixedPieChart(Widget):
                     angle_start=correct_angle,
                     angle_end=360
                 )
-
-                # Обводка
-                Color(1, 1, 1, 1)
-                Line(circle=(self.center_x, self.center_y, min(self.width, self.height) / 2), width=dp(3))
 
         # Центральный текст с процентами (добавляем как виджет)
         if total > 0:

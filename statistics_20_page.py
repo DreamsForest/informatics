@@ -209,7 +209,7 @@ class ColorBox(Widget):
 
 
 # ===========================
-# КРУГОВАЯ ДИАГРАММА ДЛЯ ЗАДАНИЯ 20
+# КРУГОВАЯ ДИАГРАММА ДЛЯ ЗАДАНИЯ 20 (БЕЗ ЛИШНЕЙ ОБВОДКИ)
 # ===========================
 class FixedPieChart20(Widget):
     def __init__(self, correct, incorrect, **kwargs):
@@ -229,16 +229,17 @@ class FixedPieChart20(Widget):
         with self.canvas:
             total = self.correct + self.incorrect
 
-            # Фон
-            Color(0.95, 0.95, 0.95, 1)
-            Ellipse(pos=self.pos, size=self.size)
+            # Убрали серый фон (больше не нужен)
+            # Color(0.95, 0.95, 0.95, 1)
+            # Ellipse(pos=self.pos, size=self.size)
 
             if total == 0:
                 # Если нет данных - серый круг
                 Color(0.88, 0.88, 0.88, 1)
                 Ellipse(pos=self.pos, size=self.size)
-                Color(0.6, 0.6, 0.6, 1)
-                Line(circle=(self.center_x, self.center_y, min(self.width, self.height) / 2), width=dp(2))
+                # Убрали серую обводку:
+                # Color(0.6, 0.6, 0.6, 1)
+                # Line(circle=(self.center_x, self.center_y, min(self.width, self.height) / 2), width=dp(2))
             else:
                 # Правильные ответы (зеленый)
                 correct_angle = 360 * (self.correct / total)
@@ -259,9 +260,9 @@ class FixedPieChart20(Widget):
                     angle_end=360
                 )
 
-                # Обводка белая
-                Color(1, 1, 1, 1)
-                Line(circle=(self.center_x, self.center_y, min(self.width, self.height) / 2), width=dp(3))
+                # УБРАЛИ БЕЛУЮ ОБВОДКУ:
+                # Color(1, 1, 1, 1)
+                # Line(circle=(self.center_x, self.center_y, min(self.width, self.height) / 2), width=dp(3))
 
         # Центральный текст с процентами
         if total > 0:

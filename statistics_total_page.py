@@ -47,139 +47,66 @@ class StatisticsTotalPage(MDBoxLayout):
         # Получаем статистику через main_app
         stats = self.main_app.get_statistics()
 
-        # Рассчитываем общую статистику
-        total_correct = sum(task["correct"] for task in stats.values())
-        total_incorrect = sum(task["incorrect"] for task in stats.values())
-        total_attempts = sum(task["total"] for task in stats.values())
-        total_percentage = (total_correct / total_attempts * 100) if total_attempts > 0 else 0
-
-        # === Сравнительная гистограмма по заданиям ===
-        comparison_card = MDCard(
-            orientation='vertical',
-            size_hint_y=None,
-            padding=dp(20),
-            spacing=dp(10),
-            md_bg_color=(1, 1, 1, 1),
-            radius=[dp(20)],
-            elevation=4,
-            height=dp(450)
+        # === Вертикальное расположение круговых диаграмм ===
+        # Диаграмма для задания 19
+        task_19_stats = stats.get("task_19", {"correct": 0, "incorrect": 0, "total": 0})
+        correct_19, incorrect_19, total_19 = task_19_stats["correct"], task_19_stats["incorrect"], task_19_stats["total"]
+        pie_chart_19_card = self.create_pie_chart_card(
+            "Задание 19",
+            correct_19,
+            incorrect_19,
+            "pie_chart_19"
         )
+        content_container.add_widget(pie_chart_19_card)
 
-        comparison_title = MDLabel(
-            text="Сравнительная статистика по заданиям",
-            theme_text_color='Primary',
-            font_style='H6',
-            size_hint_y=None,
-            height=dp(40),
-            halign="center",
-            bold=True
+        # Диаграмма для задания 20
+        task_20_stats = stats.get("task_20", {"correct": 0, "incorrect": 0, "total": 0})
+        correct_20, incorrect_20, total_20 = task_20_stats["correct"], task_20_stats["incorrect"], task_20_stats["total"]
+        pie_chart_20_card = self.create_pie_chart_card(
+            "Задание 20",
+            correct_20,
+            incorrect_20,
+            "pie_chart_20"
         )
-        comparison_card.add_widget(comparison_title)
+        content_container.add_widget(pie_chart_20_card)
 
-        comparison_chart = ComparisonBarChart(stats, size_hint_y=None, height=dp(350))
-        comparison_card.add_widget(comparison_chart)
-        content_container.add_widget(comparison_card)
-
-        # === Общая круговая диаграмма ===
-        total_pie_card = MDCard(
-            orientation='vertical',
-            size_hint_y=None,
-            padding=dp(20),
-            spacing=dp(10),
-            md_bg_color=(1, 1, 1, 1),
-            radius=[dp(20)],
-            elevation=4,
-            height=dp(400)
+        # Диаграмма для задания 21
+        task_21_stats = stats.get("task_21", {"correct": 0, "incorrect": 0, "total": 0})
+        correct_21, incorrect_21, total_21 = task_21_stats["correct"], task_21_stats["incorrect"], task_21_stats["total"]
+        pie_chart_21_card = self.create_pie_chart_card(
+            "Задание 21",
+            correct_21,
+            incorrect_21,
+            "pie_chart_21"
         )
+        content_container.add_widget(pie_chart_21_card)
 
-        total_pie_title = MDLabel(
-            text="Общая статистика выполнения",
-            theme_text_color='Primary',
-            font_style='H6',
-            size_hint_y=None,
-            height=dp(40),
-            halign="center",
-            bold=True
-        )
-        total_pie_card.add_widget(total_pie_title)
+        # === Общая сводка ===
+        total_correct = correct_19 + correct_20 + correct_21
+        total_incorrect = incorrect_19 + incorrect_20 + incorrect_21
+        total_all = total_19 + total_20 + total_21
+        total_percentage = (total_correct / total_all * 100) if total_all > 0 else 0
 
-        total_pie_chart = FixedPieChartTotal(total_correct, total_incorrect, size_hint_y=None, height=dp(250))
-        total_pie_card.add_widget(total_pie_chart)
+        summary_text = f"""ОБЩАЯ СВОДКА
 
-        # Легенда для общей круговой диаграммы
-        legend_layout = BoxLayout(orientation='horizontal', size_hint_y=None, height=dp(40),
-                                  spacing=dp(20), padding=dp(10))
-
-        # Правильные
-        correct_legend = BoxLayout(orientation='horizontal', size_hint_x=None, width=dp(150), spacing=dp(10))
-        correct_color = ColorBox(color=(0.3, 0.69, 0.31, 1), size_hint_x=None, width=dp(20))
-        correct_legend.add_widget(correct_color)
-        correct_legend.add_widget(MDLabel(
-            text=f"Правильно: {total_correct}",
-            theme_text_color='Primary',
-            font_style='Body2'
-        ))
-
-        # Неправильные
-        incorrect_legend = BoxLayout(orientation='horizontal', size_hint_x=None, width=dp(150), spacing=dp(10))
-        incorrect_color = ColorBox(color=(0.96, 0.26, 0.21, 1), size_hint_x=None, width=dp(20))
-        incorrect_legend.add_widget(incorrect_color)
-        incorrect_legend.add_widget(MDLabel(
-            text=f"Неправильно: {total_incorrect}",
-            theme_text_color='Primary',
-            font_style='Body2'
-        ))
-
-        legend_layout.add_widget(correct_legend)
-        legend_layout.add_widget(incorrect_legend)
-        total_pie_card.add_widget(legend_layout)
-
-        content_container.add_widget(total_pie_card)
-
-        # === Детальная статистика текстом ===
-        stats_text = f"""ОБЩАЯ СТАТИСТИКА ПО ВСЕМ ЗАДАНИЯМ
-
-Всего правильных ответов: {total_correct}
-Всего неправильных ответов: {total_incorrect}
-Всего попыток: {total_attempts}
+Всего попыток: {total_all}
+Из них правильных: {total_correct}
+Из них неправильных: {total_incorrect}
+Общий процент правильных: {total_percentage:.1f}%
 """
 
-        if total_attempts > 0:
-            stats_text += f"Общий процент правильных ответов: {total_percentage:.1f}%\n\n"
-
-            # Статистика по каждому заданию
-            stats_text += "СТАТИСТИКА ПО ЗАДАНИЯМ:\n"
-            for i, task_key in enumerate(['task_19', 'task_20', 'task_21']):
-                task_stats = stats.get(task_key, {"correct": 0, "incorrect": 0, "total": 0})
-                task_name = f"Задание {i + 19}"
-                if task_stats['total'] > 0:
-                    task_percentage = (task_stats['correct'] / task_stats['total']) * 100
-                    stats_text += f"{task_name}: {task_stats['correct']}/{task_stats['total']} ({task_percentage:.1f}%)\n"
-                else:
-                    stats_text += f"{task_name}: нет данных\n"
-
-            # Добавляем общую рекомендацию
-            if total_percentage >= 80:
-                stats_text += "\nОтличные результаты! Вы хорошо освоили все задания!"
-            elif total_percentage >= 60:
-                stats_text += "\nХорошие результаты! Продолжайте практиковаться!"
-            elif total_percentage >= 40:
-                stats_text += "\nНеплохие результаты! Обратите внимание на проблемные задания!"
-            else:
-                stats_text += "\nРекомендуем повторить теорию и уделить больше времени практике!"
-
-        stats_label = MDLabel(
-            text=stats_text,
+        summary_label = MDLabel(
+            text=summary_text,
             theme_text_color='Primary',
             font_style='Body1',
             size_hint_y=None,
             halign="center",
             valign="center"
         )
-        stats_label.bind(texture_size=stats_label.setter('size'))
-        stats_label.height = dp(250)
+        summary_label.bind(texture_size=summary_label.setter('size'))
+        summary_label.height = dp(120)
 
-        stats_card = MDCard(
+        summary_card = MDCard(
             orientation='vertical',
             size_hint_y=None,
             padding=dp(20),
@@ -187,10 +114,66 @@ class StatisticsTotalPage(MDBoxLayout):
             md_bg_color=(0.95, 0.95, 1, 1),
             radius=[dp(15)],
             elevation=2,
-            height=dp(300)
+            height=dp(180)
         )
-        stats_card.add_widget(stats_label)
-        content_container.add_widget(stats_card)
+        summary_card.add_widget(summary_label)
+        content_container.add_widget(summary_card)
+
+        # === Детальная статистика по заданиям ===
+        # Форматируем текст с проверкой на ноль
+        details_text_19 = f"Задание 19: {correct_19} правильных из {total_19}"
+        if total_19 > 0:
+            details_text_19 += f" ({(correct_19 / total_19 * 100):.1f}%)"
+
+        details_text_20 = f"Задание 20: {correct_20} правильных из {total_20}"
+        if total_20 > 0:
+            details_text_20 += f" ({(correct_20 / total_20 * 100):.1f}%)"
+
+        details_text_21 = f"Задание 21: {correct_21} правильных из {total_21}"
+        if total_21 > 0:
+            details_text_21 += f" ({(correct_21 / total_21 * 100):.1f}%)"
+
+        details_text = f"""ДЕТАЛЬНАЯ СТАТИСТИКА ПО ЗАДАНИЯМ
+
+{details_text_19}
+{details_text_20}
+{details_text_21}
+"""
+
+        if total_all > 0:
+            # Добавляем рекомендацию
+            if total_percentage >= 80:
+                details_text += "\nОтличный результат! Вы отлично справляетесь со всеми заданиями!"
+            elif total_percentage >= 60:
+                details_text += "\nХороший результат! Продолжайте в том же духе!"
+            elif total_percentage >= 40:
+                details_text += "\nНеплохо! Есть над чем поработать!"
+            else:
+                details_text += "\nРекомендуем повторить теорию и попрактиковаться!"
+
+        details_label = MDLabel(
+            text=details_text,
+            theme_text_color='Primary',
+            font_style='Body1',
+            size_hint_y=None,
+            halign="center",
+            valign="center"
+        )
+        details_label.bind(texture_size=details_label.setter('size'))
+        details_label.height = dp(200)
+
+        details_card = MDCard(
+            orientation='vertical',
+            size_hint_y=None,
+            padding=dp(20),
+            spacing=dp(10),
+            md_bg_color=(0.95, 0.98, 0.95, 1),
+            radius=[dp(15)],
+            elevation=2,
+            height=dp(240)
+        )
+        details_card.add_widget(details_label)
+        content_container.add_widget(details_card)
 
         # Кнопка назад
         back_button = MDRaisedButton(
@@ -203,6 +186,89 @@ class StatisticsTotalPage(MDBoxLayout):
 
         scroll_view.add_widget(content_container)
         self.add_widget(scroll_view)
+
+    def create_pie_chart_card(self, title, correct, incorrect, chart_id):
+        """Создает карточку с круговой диаграммой"""
+        card = MDCard(
+            orientation='vertical',
+            size_hint_y=None,
+            padding=dp(20),
+            spacing=dp(10),
+            md_bg_color=(1, 1, 1, 1),
+            radius=[dp(15)],
+            elevation=3,
+            height=dp(320)  # Уменьшил высоту для вертикального расположения
+        )
+
+        # Заголовок задания
+        title_label = MDLabel(
+            text=title,
+            theme_text_color='Primary',
+            font_style='H5',
+            size_hint_y=None,
+            height=dp(40),
+            halign="center",
+            bold=True
+        )
+        card.add_widget(title_label)
+
+        # Создаем круговую диаграмму
+        if chart_id == "pie_chart_19":
+            pie_chart = FixedPieChart19(correct, incorrect, size_hint_y=None, height=dp(180))
+        elif chart_id == "pie_chart_20":
+            pie_chart = FixedPieChart20(correct, incorrect, size_hint_y=None, height=dp(180))
+        else:  # pie_chart_21
+            pie_chart = FixedPieChart21(correct, incorrect, size_hint_y=None, height=dp(180))
+
+        card.add_widget(pie_chart)
+
+        # Легенда
+        legend_layout = BoxLayout(
+            orientation='horizontal',
+            size_hint_y=None,
+            height=dp(40),
+            spacing=dp(20),
+            padding=dp(10)
+        )
+
+        # Правильные
+        correct_legend = BoxLayout(orientation='horizontal', size_hint_x=0.5, spacing=dp(10))
+        correct_color = ColorBox(color=(0.3, 0.69, 0.31, 1), size_hint_x=None, width=dp(20))
+        correct_legend.add_widget(correct_color)
+        correct_legend.add_widget(MDLabel(
+            text=f"Правильно: {correct}",
+            theme_text_color='Primary',
+            font_style='Body2'
+        ))
+
+        # Неправильные
+        incorrect_legend = BoxLayout(orientation='horizontal', size_hint_x=0.5, spacing=dp(10))
+        incorrect_color = ColorBox(color=(0.96, 0.26, 0.21, 1), size_hint_x=None, width=dp(20))
+        incorrect_legend.add_widget(incorrect_color)
+        incorrect_legend.add_widget(MDLabel(
+            text=f"Неправильно: {incorrect}",
+            theme_text_color='Primary',
+            font_style='Body2'
+        ))
+
+        legend_layout.add_widget(correct_legend)
+        legend_layout.add_widget(incorrect_legend)
+        card.add_widget(legend_layout)
+
+        # Общая информация
+        total = correct + incorrect
+        percentage = (correct / total * 100) if total > 0 else 0
+        info_label = MDLabel(
+            text=f"Всего попыток: {total} • Процент правильных: {percentage:.1f}%",
+            theme_text_color='Secondary',
+            font_style='Body2',
+            size_hint_y=None,
+            height=dp(30),
+            halign="center"
+        )
+        card.add_widget(info_label)
+
+        return card
 
 
 # Виджет для отображения цветного квадратика в легенде
@@ -223,166 +289,9 @@ class ColorBox(Widget):
 
 
 # ===========================
-# СРАВНИТЕЛЬНАЯ ГИСТОГРАММА ПО ЗАДАНИЯМ
+# КРУГОВАЯ ДИАГРАММА ДЛЯ ЗАДАНИЯ 19 (БЕЗ ЛИШНЕЙ ОБВОДКИ)
 # ===========================
-class ComparisonBarChart(Widget):
-    def __init__(self, stats, **kwargs):
-        super().__init__(**kwargs)
-        self.stats = stats
-        self.labels = []
-        self.bind(pos=self.update_chart, size=self.update_chart)
-
-    def clear_labels(self):
-        """Очищает все текстовые метки"""
-        for label in self.labels:
-            if label in self.children:
-                self.remove_widget(label)
-        self.labels.clear()
-
-    def update_chart(self, *args):
-        self.canvas.clear()
-        self.clear_labels()
-
-        with self.canvas:
-            # Размеры для графика
-            chart_height = self.height * 0.7
-            chart_width = self.width * 0.8
-            start_x = self.x + self.width * 0.1
-            start_y = self.y + self.height * 0.2
-
-            # Данные для отображения
-            tasks = ['Зад. 19', 'Зад. 20', 'Зад. 21']
-            colors = [(0.33, 0.67, 0.93, 1),  # #2196F3 - синий
-                      (1.0, 0.6, 0.0, 1),  # #FF9800 - оранжевый
-                      (0.61, 0.15, 0.69, 1)]  # #9C27B0 - фиолетовый
-
-            percentages = []
-            correct_answers = []
-            total_answers = []
-
-            for task_key in ['task_19', 'task_20', 'task_21']:
-                task_stats = self.stats.get(task_key, {"correct": 0, "incorrect": 0, "total": 0})
-                correct_answers.append(task_stats["correct"])
-                total_answers.append(task_stats["total"])
-                if task_stats["total"] > 0:
-                    percentages.append((task_stats["correct"] / task_stats["total"]) * 100)
-                else:
-                    percentages.append(0)
-
-            # Находим максимальное значение для масштабирования
-            max_percentage = max(percentages) if any(percentages) else 100
-
-            # Рисуем столбцы
-            bar_width = chart_width / 5
-            spacing = bar_width / 3
-
-            for i, (task, percentage, color) in enumerate(zip(tasks, percentages, colors)):
-                bar_x = start_x + i * (bar_width + spacing)
-
-                if total_answers[i] > 0:
-                    # Столбец с процентом
-                    bar_height = (percentage / max_percentage) * chart_height if max_percentage > 0 else 0
-                    Color(*color)
-                    Rectangle(pos=(bar_x, start_y), size=(bar_width, bar_height))
-                else:
-                    # Серый столбец если нет данных
-                    Color(0.88, 0.88, 0.88, 1)
-                    Rectangle(pos=(bar_x, start_y), size=(bar_width, chart_height * 0.3))
-
-            # Сетка
-            Color(0.7, 0.7, 0.7, 0.3)
-            for i in range(1, 6):
-                y_pos = start_y + (chart_height * i / 5)
-                Line(points=[start_x, y_pos, start_x + chart_width, y_pos], width=dp(0.5))
-
-        # Добавляем подписи
-        self.add_chart_labels(start_x, start_y, bar_width, spacing, chart_width, chart_height,
-                              tasks, percentages, correct_answers, total_answers)
-
-    def add_chart_labels(self, start_x, start_y, bar_width, spacing, chart_width, chart_height,
-                         tasks, percentages, correct_answers, total_answers):
-        """Добавляет подписи к гистограмме"""
-
-        # Находим максимальное значение для масштабирования
-        max_percentage = max(percentages) if any(percentages) else 100
-
-        # Подписи заданий и процентов
-        for i, (task, percentage, correct, total) in enumerate(zip(tasks, percentages, correct_answers, total_answers)):
-            bar_x = start_x + i * (bar_width + spacing)
-            bar_height = (percentage / max_percentage * chart_height) if max_percentage > 0 else chart_height * 0.3
-
-            # Название задания
-            task_label = MDLabel(
-                text=task,
-                halign="center",
-                theme_text_color="Primary",
-                font_style="Body2",
-                bold=True,
-                size_hint=(None, None)
-            )
-            task_label.size = (bar_width * 1.2, dp(20))
-            task_label.pos = (
-                bar_x - bar_width / 10,
-                start_y - dp(25)
-            )
-            self.add_widget(task_label)
-            self.labels.append(task_label)
-
-            # Процент
-            if total > 0:
-                percent_label = MDLabel(
-                    text=f"{percentage:.1f}%",
-                    halign="center",
-                    theme_text_color="Primary",
-                    font_style="Body2",
-                    bold=True,
-                    size_hint=(None, None)
-                )
-                percent_label.size = (bar_width * 1.2, dp(20))
-                percent_label.pos = (
-                    bar_x - bar_width / 10,
-                    start_y + bar_height + dp(5)
-                )
-                self.add_widget(percent_label)
-                self.labels.append(percent_label)
-
-            # Количество ответов
-            count_label = MDLabel(
-                text=f"{correct}/{total}",
-                halign="center",
-                theme_text_color="Secondary",
-                font_style="Body2",
-                size_hint=(None, None)
-            )
-            count_label.size = (bar_width * 1.2, dp(20))
-            count_label.pos = (
-                bar_x - bar_width / 10,
-                start_y - dp(45)
-            )
-            self.add_widget(count_label)
-            self.labels.append(count_label)
-
-        # Подпись оси Y
-        y_axis_label = MDLabel(
-            text="Процент правильных (%)",
-            halign="center",
-            theme_text_color="Secondary",
-            font_style="Body2",
-            size_hint=(None, None)
-        )
-        y_axis_label.size = (dp(120), dp(30))
-        y_axis_label.pos = (
-            start_x - dp(70),
-            start_y + chart_height / 2 - dp(15)
-        )
-        self.add_widget(y_axis_label)
-        self.labels.append(y_axis_label)
-
-
-# ===========================
-# ОБЩАЯ КРУГОВАЯ ДИАГРАММА
-# ===========================
-class FixedPieChartTotal(Widget):
+class FixedPieChart19(Widget):
     def __init__(self, correct, incorrect, **kwargs):
         super().__init__(**kwargs)
         self.correct = correct
@@ -400,16 +309,10 @@ class FixedPieChartTotal(Widget):
         with self.canvas:
             total = self.correct + self.incorrect
 
-            # Фон
-            Color(0.95, 0.95, 0.95, 1)
-            Ellipse(pos=self.pos, size=self.size)
-
             if total == 0:
                 # Если нет данных - серый круг
                 Color(0.88, 0.88, 0.88, 1)
                 Ellipse(pos=self.pos, size=self.size)
-                Color(0.6, 0.6, 0.6, 1)
-                Line(circle=(self.center_x, self.center_y, min(self.width, self.height) / 2), width=dp(2))
             else:
                 # Правильные ответы (зеленый)
                 correct_angle = 360 * (self.correct / total)
@@ -430,9 +333,77 @@ class FixedPieChartTotal(Widget):
                     angle_end=360
                 )
 
-                # Обводка белая
-                Color(1, 1, 1, 1)
-                Line(circle=(self.center_x, self.center_y, min(self.width, self.height) / 2), width=dp(3))
+        # Центральный текст с процентами
+        if total > 0:
+            percentage = (self.correct / total * 100)
+            center_text = f"{self.correct}/{total}\n({percentage:.1f}%)"
+        else:
+            center_text = "Нет\nданных"
+
+        self.center_label = MDLabel(
+            text=center_text,
+            halign="center",
+            valign="center",
+            theme_text_color="Primary",
+            font_style="Body2",
+            bold=True,
+            size_hint=(None, None)
+        )
+
+        # Позиционируем по центру
+        label_size = (dp(80), dp(50))
+        self.center_label.size = label_size
+        self.center_label.pos = (
+            self.center_x - label_size[0] / 2,
+            self.center_y - label_size[1] / 2
+        )
+        self.add_widget(self.center_label)
+
+
+# ===========================
+# КРУГОВАЯ ДИАГРАММА ДЛЯ ЗАДАНИЯ 20 (БЕЗ ЛИШНЕЙ ОБВОДКИ)
+# ===========================
+class FixedPieChart20(Widget):
+    def __init__(self, correct, incorrect, **kwargs):
+        super().__init__(**kwargs)
+        self.correct = correct
+        self.incorrect = incorrect
+        self.center_label = None
+        self.bind(pos=self.update_chart, size=self.update_chart)
+
+    def update_chart(self, *args):
+        self.canvas.clear()
+
+        # Удаляем старую центральную подпись
+        if self.center_label and self.center_label in self.children:
+            self.remove_widget(self.center_label)
+
+        with self.canvas:
+            total = self.correct + self.incorrect
+
+            if total == 0:
+                # Если нет данных - серый круг
+                Color(0.88, 0.88, 0.88, 1)
+                Ellipse(pos=self.pos, size=self.size)
+            else:
+                # Правильные ответы (зеленый)
+                correct_angle = 360 * (self.correct / total)
+                Color(0.3, 0.69, 0.31, 1)
+                Ellipse(
+                    pos=self.pos,
+                    size=self.size,
+                    angle_start=0,
+                    angle_end=correct_angle
+                )
+
+                # Неправильные ответы (красный)
+                Color(0.96, 0.26, 0.21, 1)
+                Ellipse(
+                    pos=self.pos,
+                    size=self.size,
+                    angle_start=correct_angle,
+                    angle_end=360
+                )
 
         # Центральный текст с процентами
         if total > 0:
@@ -446,13 +417,85 @@ class FixedPieChartTotal(Widget):
             halign="center",
             valign="center",
             theme_text_color="Primary",
-            font_style="Body1",
+            font_style="Body2",
             bold=True,
             size_hint=(None, None)
         )
 
         # Позиционируем по центру
-        label_size = (dp(100), dp(60))
+        label_size = (dp(80), dp(50))
+        self.center_label.size = label_size
+        self.center_label.pos = (
+            self.center_x - label_size[0] / 2,
+            self.center_y - label_size[1] / 2
+        )
+        self.add_widget(self.center_label)
+
+
+# ===========================
+# КРУГОВАЯ ДИАГРАММА ДЛЯ ЗАДАНИЯ 21 (БЕЗ ЛИШНЕЙ ОБВОДКИ)
+# ===========================
+class FixedPieChart21(Widget):
+    def __init__(self, correct, incorrect, **kwargs):
+        super().__init__(**kwargs)
+        self.correct = correct
+        self.incorrect = incorrect
+        self.center_label = None
+        self.bind(pos=self.update_chart, size=self.update_chart)
+
+    def update_chart(self, *args):
+        self.canvas.clear()
+
+        # Удаляем старую центральную подпись
+        if self.center_label and self.center_label in self.children:
+            self.remove_widget(self.center_label)
+
+        with self.canvas:
+            total = self.correct + self.incorrect
+
+            if total == 0:
+                # Если нет данных - серый круг
+                Color(0.88, 0.88, 0.88, 1)
+                Ellipse(pos=self.pos, size=self.size)
+            else:
+                # Правильные ответы (зеленый)
+                correct_angle = 360 * (self.correct / total)
+                Color(0.3, 0.69, 0.31, 1)
+                Ellipse(
+                    pos=self.pos,
+                    size=self.size,
+                    angle_start=0,
+                    angle_end=correct_angle
+                )
+
+                # Неправильные ответы (красный)
+                Color(0.96, 0.26, 0.21, 1)
+                Ellipse(
+                    pos=self.pos,
+                    size=self.size,
+                    angle_start=correct_angle,
+                    angle_end=360
+                )
+
+        # Центральный текст с процентами
+        if total > 0:
+            percentage = (self.correct / total * 100)
+            center_text = f"{self.correct}/{total}\n({percentage:.1f}%)"
+        else:
+            center_text = "Нет\nданных"
+
+        self.center_label = MDLabel(
+            text=center_text,
+            halign="center",
+            valign="center",
+            theme_text_color="Primary",
+            font_style="Body2",
+            bold=True,
+            size_hint=(None, None)
+        )
+
+        # Позиционируем по центру
+        label_size = (dp(80), dp(50))
         self.center_label.size = label_size
         self.center_label.pos = (
             self.center_x - label_size[0] / 2,
